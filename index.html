@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third Party Risk Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Outfit:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Merriweather:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="glass-panel">
+        <div id="login-form-container" class="active">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Log in to your account</p>
+            <form id="login-form">
+                <p id="login-error" class="auth-error hidden"></p>
+                <div class="input-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="input-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label for="login-password" style="margin-bottom: 0;">Password</label>
+                        <span id="to-forgot-password" style="font-size: 0.8rem; color: var(--primary); cursor: pointer; font-weight: 500;">Forgot password?</span>
+                    </div>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="primary-btn">Log In</button>
+                <p class="toggle-auth">Don't have an account? <span id="to-register">Create one</span></p>
+            </form>
+        </div>
+
+        <div id="register-form-container">
+            <h2>Create Account</h2>
+            <p class="subtitle">Join our Third Party Risk platform</p>
+            <form id="register-form">
+                <p id="register-error" class="auth-error hidden"></p>
+                <div class="input-group">
+                    <label for="reg-name">Full Name</label>
+                    <input type="text" id="reg-name" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" required>
+                    <span id="reg-email-hint" class="field-hint hidden"></span>
+                </div>
+                <div class="input-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" required minlength="8" maxlength="64">
+                    <span class="field-hint">Minimum 8 characters. Longer passphrases are stronger and just as easy to remember.</span>
+                    <span id="reg-password-hint" class="field-hint hidden"></span>
+                </div>
+                <button type="submit" class="primary-btn">Sign Up</button>
+                <p class="toggle-auth">Already have an account? <span id="to-login">Log in</span></p>
+            </form>
+        </div>
+
+        <div id="forgot-password-container">
+            <h2>Reset Password</h2>
+            <p class="subtitle">Enter your email to receive a reset link</p>
+            <form id="forgot-password-form">
+                <p id="forgot-error" class="auth-error hidden"></p>
+                <div class="input-group">
+                    <label for="forgot-email">Email</label>
+                    <input type="email" id="forgot-email" required>
+                </div>
+                <button type="submit" class="primary-btn">Send Reset Link</button>
+                <p class="toggle-auth">Remember your password? <span id="to-login-from-forgot">Log in</span></p>
+            </form>
+        </div>
+
+        <div id="reset-password-container">
+            <h2>New Password</h2>
+            <p class="subtitle" id="reset-password-subtitle">Create a new password for your account</p>
+            <form id="reset-password-form">
+                <p id="reset-error" class="auth-error hidden"></p>
+                <div class="input-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" required minlength="8" maxlength="64">
+                    <span class="field-hint">Minimum 8 characters.</span>
+                </div>
+                <div class="input-group">
+                    <label for="confirm-new-password">Confirm New Password</label>
+                    <input type="password" id="confirm-new-password" required minlength="8" maxlength="64">
+                </div>
+                <button type="submit" class="primary-btn">Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboard-container" class="hidden">
+        <aside class="sidebar glass-panel">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h2 style="font-size: 1.2rem; text-align: left; line-height: 1.2;">Third Party<br>Risk Management</h2>
+            </div>
+            <nav id="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="dashboard-view">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item" data-view="vendors-view">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Vendors
+                </a>
+                <a href="#" class="nav-item" data-view="assessments-list-view">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Assessments
+                </a>
+                <a href="#" class="nav-item" data-view="questionnaires-view">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    Questionnaires
+                </a>
+                <a href="#" class="nav-item" data-view="metrics-view">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    Metrics
+                </a>
+                <a href="#" class="nav-item" data-view="portals-view">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                    Portals
+                </a>
+                <a href="#" class="nav-item" data-view="configuration-view">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Configuration
+                </a>
+            </nav>
+            <div class="user-profile" id="profile-btn" style="cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                <div class="avatar" id="user-avatar" style="background-size: cover; background-position: center;">U</div>
+                <div class="user-info">
+                    <p id="user-name-display">User Name</p>
+                    <span class="logout-btn" id="logout-btn">Log out</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Global Top Actions -->
+            <header class="topbar">
+                <h1 id="view-title">Dashboard</h1>
+            </header>
+
+            <!-- VIEW: Dashboard -->
+            <div id="dashboard-view" class="app-view">
+                <!-- Dynamic Greeting Banner -->
+                <div id="greeting-banner" class="glass-panel greeting-banner">
+                    <div class="greeting-banner-text">
+                        <h2 id="greeting-message">Welcome back</h2>
+                        <p id="greeting-subtext">Here's where your third-party risk program stands today.</p>
+                    </div>
+                    <div class="greeting-banner-time">
+                        <span id="greeting-clock">--:--</span>
+                        <span id="greeting-date">--</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid stats-grid-5">
+                    <div class="stat-card glass-panel hover-card">
+                        <div class="stat-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: var(--primary);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <h3>Total Vendors</h3>
+                        <p class="stat-value" id="stat-total">0</p>
+                    </div>
+                    <div class="stat-card glass-panel hover-card" style="border-bottom: 3px solid var(--danger);">
+                        <div class="stat-icon-wrap" style="background: var(--danger-bg); color: var(--danger);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <h3>High Risk</h3>
+                        <p class="stat-value text-danger" id="stat-high-risk">0</p>
+                    </div>
+                    <div class="stat-card glass-panel hover-card" style="border-bottom: 3px solid var(--warning);">
+                        <div class="stat-icon-wrap" style="background: var(--warning-bg); color: var(--warning);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        </div>
+                        <h3>Medium Risk</h3>
+                        <p class="stat-value text-warning" id="stat-medium-risk">0</p>
+                    </div>
+                    <div class="stat-card glass-panel hover-card" style="border-bottom: 3px solid var(--success);">
+                        <div class="stat-icon-wrap" style="background: var(--success-bg); color: var(--success);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                        <h3>Low Risk</h3>
+                        <p class="stat-value text-success" id="stat-low-risk">0</p>
+                    </div>
+                    <div class="stat-card glass-panel hover-card" style="border-bottom: 3px solid #8b5cf6;">
+                        <div class="stat-icon-wrap" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                        <h3>Completed Assessments</h3>
+                        <p class="stat-value" id="stat-completed" style="color: #8b5cf6;">0</p>
+                    </div>
+                </div>
+
+                <div id="empty-state" class="empty-state glass-panel hidden" style="margin-top: 2rem;">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    </div>
+                    <h2>No Vendors Found</h2>
+                    <p>Your inventory is clean! Start by adding your first vendor to assess their risk.</p>
+                    <button class="primary-btn mt-4" id="empty-add-btn">+ Add Vendor</button>
+                </div>
+
+                <!-- Assessment Summary Section -->
+                <div id="dashboard-summary-section" class="dashboard-summary-grid">
+                    <div class="glass-panel hover-card dashboard-summary-card">
+                        <h3 class="summary-card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>
+                            Risk Distribution
+                        </h3>
+                        <div id="dashboard-risk-bar" class="risk-distribution-bar"></div>
+                        <div id="dashboard-risk-legend" class="risk-distribution-legend"></div>
+                    </div>
+
+                    <div class="glass-panel hover-card dashboard-summary-card">
+                        <h3 class="summary-card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
+                            Assessment Completion
+                        </h3>
+                        <div class="completion-ring-wrap">
+                            <div class="completion-ring" id="dashboard-completion-ring">
+                                <span id="dashboard-completion-pct">0%</span>
+                            </div>
+                            <div class="completion-ring-details">
+                                <p><span id="dashboard-completed-count">0</span> completed</p>
+                                <p><span id="dashboard-pending-count">0</span> pending</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel hover-card dashboard-summary-card">
+                        <h3 class="summary-card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            Upcoming Reviews
+                        </h3>
+                        <div id="dashboard-upcoming-reviews" class="upcoming-reviews-list">
+                            <p class="empty-mini-state">No upcoming reviews scheduled.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Vendors -->
+            <div id="vendors-view" class="app-view hidden">
+                <div class="table-container glass-panel" style="overflow: visible;">
+                    <div class="table-header" style="flex-wrap: wrap; gap: 1rem;">
+                        <h2>Vendor Directory</h2>
+                        <div class="filters-row" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <input type="text" placeholder="Search by name, type..." id="search-vendors" class="search-input" style="width: 200px;">
+                            
+                            <div class="dropdown" style="position: relative;">
+                                <button class="secondary-btn" id="filter-dropdown-btn" style="padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    Filter
+                                </button>
+                                <div id="filter-dropdown-menu" class="glass-panel hidden" style="position: absolute; top: 100%; right: 0; margin-top: 0.5rem; padding: 1rem; z-index: 100; min-width: 200px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Risk Level</label>
+                                        <select id="filter-risk" class="select-input" style="width: 100%; padding: 0.5rem; background: rgba(15, 23, 42, 0.8);">
+                                            <option value="All">All Risks</option>
+                                            <option value="High">High Risk</option>
+                                            <option value="Medium">Medium Risk</option>
+                                            <option value="Low">Low Risk</option>
+                                            <option value="Pending">Pending</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Sort By</label>
+                                        <select id="sort-by" class="select-input" style="width: 100%; padding: 0.5rem; background: rgba(15, 23, 42, 0.8);">
+                                            <option value="name_asc">Name (A-Z)</option>
+                                            <option value="name_desc">Name (Z-A)</option>
+                                            <option value="date_asc">Review Date (Asc)</option>
+                                            <option value="date_desc">Review Date (Desc)</option>
+                                            <option value="risk">Risk Level</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+                                <button class="secondary-btn" id="vendors-select-btn" style="padding: 0.5rem 1rem;">Select</button>
+                                <button class="secondary-btn" id="vendors-export-btn" style="padding: 0.5rem 1rem;">Export</button>
+                                <button class="secondary-btn" id="vendors-template-btn" style="padding: 0.5rem 1rem;">Template</button>
+                                <button class="secondary-btn" id="vendors-import-btn" style="padding: 0.5rem 1rem;" onclick="document.getElementById('vendor-import-file').click()">Import</button>
+                                <button class="primary-btn" id="vendors-add-btn">+ Add Vendor</button>
+                                <input type="file" id="vendor-import-file" style="display: none;" accept=".csv,.xlsx,.xls">
+                            </div>
+                        </div>
+                        <p class="field-hint" style="margin-top: 0.75rem;">Import accepts any Excel/CSV layout — the engine auto-detects columns like Vendor ID, Vendor Name, Category, Vendor POC, Review Date, and Next Review Date even under different header names. Download the Template for the recommended format.</p>
+
+                        <!-- Bulk action bar (shown when selection mode is on) -->
+                        <div id="vendors-bulk-bar" class="vendors-bulk-bar hidden">
+                            <label class="bulk-select-all">
+                                <input type="checkbox" id="vendors-select-all"> Select all
+                            </label>
+                            <span id="vendors-selected-count">0 selected</span>
+                            <div style="margin-left: auto; display: flex; gap: 0.5rem;">
+                                <button class="secondary-btn" id="vendors-bulk-export-btn" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">Export Selected</button>
+                                <button class="secondary-btn danger-btn" id="vendors-bulk-delete-btn" style="padding: 0.4rem 0.9rem; font-size: 0.85rem; border: 1px solid var(--danger); color: var(--danger);">Delete Selected</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table id="vendors-table">
+                            <thead>
+                                <tr>
+                                    <th class="vendor-checkbox-col hidden"></th>
+                                    <th>Vendor Name</th>
+                                    <th>Type & Data</th>
+                                    <th>Risk Rating</th>
+                                    <th>Next Review</th>
+                                    <th>Score</th>
+                                    <th>Assessor</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendors-tbody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Assessments List -->
+            <div id="assessments-list-view" class="app-view hidden">
+                <div class="table-container glass-panel">
+                    <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <h2>Assessment Tracker</h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="secondary-btn" id="assessments-export-btn" style="padding: 0.5rem 1rem;">Export</button>
+                            <button class="secondary-btn" id="assessments-import-btn" style="padding: 0.5rem 1rem;" onclick="document.getElementById('assessment-import-file').click()">Import</button>
+                            <input type="file" id="assessment-import-file" style="display: none;" accept=".csv,.xlsx,.xls">
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table id="assessments-table">
+                            <thead>
+                                <tr>
+                                    <th>Vendor</th>
+                                    <th>Status</th>
+                                    <th>Assessment Score</th>
+                                    <th>Due Date</th>
+                                    <th>Assessor</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assessments-tbody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Questionnaires -->
+            <div id="questionnaires-view" class="app-view hidden">
+                <div class="glass-panel" style="padding: 2rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="color: var(--primary);">Questionnaire Templates</h2>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">Create and manage your intake, assessment, and audit questionnaires.</p>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="primary-btn" id="create-questionnaire-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                Create New
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intake Section: its own partitioned card -->
+                <div class="glass-panel questionnaire-section-card" style="border-left: 4px solid var(--primary);">
+                    <div class="questionnaire-section-header">
+                        <div class="questionnaire-section-title">
+                            <div class="questionnaire-section-icon" style="background: rgba(59, 130, 246, 0.12); color: var(--primary);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+                            </div>
+                            <div>
+                                <h3 style="color: var(--primary); font-size: 1.1rem; margin: 0;">Intake Questionnaires</h3>
+                                <span class="questionnaire-section-count" id="intake-q-count">0 questionnaires</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="secondary-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" onclick="document.getElementById('import-intake-file').click()">Import</button>
+                            <input type="file" id="import-intake-file" style="display: none;" accept=".xlsx,.xls,.pdf" onchange="window.importQuestionnaire('Intake', this)">
+                            <button class="secondary-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" onclick="window.exportQuestionnaires('Intake')">Export</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table style="width: 100%; text-align: left;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Name</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Questions</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Created</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border); text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questionnaires-intake-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Assessment Section: its own partitioned card -->
+                <div class="glass-panel questionnaire-section-card" style="border-left: 4px solid var(--success);">
+                    <div class="questionnaire-section-header">
+                        <div class="questionnaire-section-title">
+                            <div class="questionnaire-section-icon" style="background: var(--success-bg); color: var(--success);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                            </div>
+                            <div>
+                                <h3 style="color: var(--success); font-size: 1.1rem; margin: 0;">Main Assessments</h3>
+                                <span class="questionnaire-section-count" id="assessment-q-count">0 questionnaires</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="secondary-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" onclick="document.getElementById('import-assessment-file').click()">Import</button>
+                            <input type="file" id="import-assessment-file" style="display: none;" accept=".xlsx,.xls,.pdf" onchange="window.importQuestionnaire('Assessment', this)">
+                            <button class="secondary-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" onclick="window.exportQuestionnaires('Assessment')">Export</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table style="width: 100%; text-align: left;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Name</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Questions</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Created</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border); text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questionnaires-assessment-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Audit Section: its own partitioned card -->
+                <div class="glass-panel questionnaire-section-card" style="border-left: 4px solid var(--warning); margin-bottom: 0;">
+                    <div class="questionnaire-section-header">
+                        <div class="questionnaire-section-title">
+                            <div class="questionnaire-section-icon" style="background: var(--warning-bg); color: var(--warning);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            </div>
+                            <div>
+                                <h3 style="color: var(--warning); font-size: 1.1rem; margin: 0;">Audit Questionnaires</h3>
+                                <span class="questionnaire-section-count" id="audit-q-count">0 questionnaires</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="secondary-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" onclick="document.getElementById('import-audit-file').click()">Import</button>
+                            <input type="file" id="import-audit-file" style="display: none;" accept=".xlsx,.xls,.pdf" onchange="window.importQuestionnaire('Audit', this)">
+                            <button class="secondary-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;" onclick="window.exportQuestionnaires('Audit')">Export</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table style="width: 100%; text-align: left;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Name</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Questions</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">Created</th>
+                                    <th style="padding: 1rem; border-bottom: 1px solid var(--glass-border); text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questionnaires-audit-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Metrics -->
+            <div id="metrics-view" class="app-view hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2>Metrics & Reports</h2>
+                    <button class="primary-btn" id="ai-interpret-btn" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6); border: none; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                        AI Interpret
+                    </button>
+                </div>
+
+                <!-- AI Summary Panel -->
+                <div id="ai-summary-panel" class="glass-panel hidden" style="margin-bottom: 2rem; border-left: 4px solid #8b5cf6; position: relative; overflow: hidden;">
+                    <div id="ai-summary-loading" style="display: flex; align-items: center; gap: 1rem; color: var(--primary);">
+                        <div class="loading-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(59, 130, 246, 0.3); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <span style="font-weight: 500;">AI is analyzing metrics...</span>
+                    </div>
+                    <div id="ai-summary-content" class="hidden">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; color: #8b5cf6; margin-bottom: 1rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            AI Executive Summary
+                        </h3>
+                        <div id="ai-summary-chips" class="ai-summary-chips"></div>
+                        <p id="ai-summary-text" style="line-height: 1.7; color: var(--text-light);"></p>
+                        <div id="ai-summary-recommendations" class="ai-recommendations"></div>
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="margin-bottom: 2rem; padding: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary);">Custom Chart Builder</h3>
+                    <div class="filters-row" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Chart Title</label>
+                            <input type="text" id="builder-title" class="search-input" placeholder="e.g. Vendors by Type" style="width: 100%;">
+                        </div>
+                        <div style="width: 150px;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Chart Type</label>
+                            <select id="builder-type" class="select-input" style="width: 100%; padding: 0.5rem; background: rgba(15, 23, 42, 0.8);">
+                                <option value="pie">Pie Chart</option>
+                                <option value="doughnut">Doughnut Chart</option>
+                                <option value="bar">Bar Chart</option>
+                            </select>
+                        </div>
+                        <div style="width: 180px;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">X-Axis (Group By)</label>
+                            <select id="builder-source" class="select-input" style="width: 100%; padding: 0.5rem; background: rgba(15, 23, 42, 0.8);">
+                                <option value="risk">Risk Level</option>
+                                <option value="type">Vendor Type</option>
+                                <option value="dataType">Data Type</option>
+                                <option value="scoreStatus">Assessment Status</option>
+                            </select>
+                        </div>
+                        <div style="width: 180px;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Y-Axis (Value)</label>
+                            <select id="builder-y-axis" class="select-input" style="width: 100%; padding: 0.5rem; background: rgba(15, 23, 42, 0.8);">
+                                <option value="count">Count of Vendors</option>
+                                <option value="avgInherent">Avg Inherent Risk</option>
+                                <option value="avgAssessment">Avg Assessment Score</option>
+                                <option value="avgResidual">Avg Residual Risk</option>
+                            </select>
+                        </div>
+                        <button class="primary-btn" id="builder-add-btn" style="margin-bottom: 2px;">Add Chart</button>
+                    </div>
+                </div>
+
+                <div class="grid-2col" id="charts-grid">
+                    <div class="glass-panel">
+                        <h3 style="margin-bottom: 1.5rem;">Risk Distribution</h3>
+                        <div style="position: relative; height: 300px; width: 100%; display: flex; justify-content: center;">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-panel">
+                        <h3 style="margin-bottom: 1.5rem;">Assessment Status</h3>
+                        <div style="position: relative; height: 300px; width: 100%; display: flex; justify-content: center;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reporting Schema (analyst-style export-ready tables + chart guidance) -->
+                <div class="glass-panel" style="margin-top: 2rem; padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="margin: 0; color: var(--primary);">Reporting Schema</h3>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.35rem;">Export-ready data tables for each metric category, each paired with the recommended chart type, why it fits, and the executive insight to highlight. Built from your live vendor data.</p>
+                        </div>
+                        <button class="primary-btn" id="generate-schema-btn" style="width:auto; flex-shrink:0;">Generate Reporting Schema</button>
+                    </div>
+                    <div id="reporting-schema-output">
+                        <p class="empty-mini-state" style="padding: 1rem 0;">Click "Generate Reporting Schema" to build structured, copyable reporting tables with chart recommendations.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Portals -->
+            <div id="portals-view" class="app-view hidden">
+                <div class="glass-panel" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2>Intake Portal Tracking</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="portals-table">
+                            <thead>
+                                <tr>
+                                    <th>Vendor Name</th>
+                                    <th>Email Sent</th>
+                                    <th>Portal Status</th>
+                                    <th>Inherent Risk</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Vendor Detail (Sub-view of Vendors/Assessments) -->
+            <div id="vendor-detail-view" class="app-view hidden">
+                <header class="topbar" style="background: transparent; border: none; padding: 0 0 1.5rem 0;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <button class="secondary-btn" id="back-to-vendors" style="padding: 0.4rem 0.8rem;">&larr; Back</button>
+                        <h1 id="detail-vendor-name" style="font-size: 1.5rem;">Vendor Details</h1>
+                    </div>
+                    <div class="actions" style="display: flex; gap: 1rem; align-items: center;">
+                        <span class="badge" id="detail-risk-badge">Pending</span>
+                        <span class="score" id="detail-score">Pending</span>
+                    </div>
+                </header>
+
+                <div class="detail-container glass-panel">
+                    <div class="tabs-header">
+                        <button class="tab-btn active" data-target="tab-overview">Overview</button>
+                        <button class="tab-btn" data-target="tab-intake">Questionnaires</button>
+                        <button class="tab-btn" data-target="tab-assessment">Assessment</button>
+                        <button class="tab-btn" data-target="tab-documents">Documents</button>
+                        <button class="tab-btn" data-target="tab-report">Report</button>
+                    </div>
+                    
+                    <div class="tab-content" style="padding: 1.5rem;">
+                        <!-- Overview Tab -->
+                        <div id="tab-overview" class="tab-pane active">
+                            <div class="form-grid">
+                                <div class="info-group">
+                                    <label>Vendor Type</label>
+                                    <p id="ov-type" class="info-val">-</p>
+                                </div>
+                                <div class="info-group">
+                                    <label>Data Captured</label>
+                                    <p id="ov-data" class="info-val">-</p>
+                                </div>
+                                <div class="info-group">
+                                    <label>Point of Contact</label>
+                                    <p id="ov-poc" class="info-val">-</p>
+                                </div>
+                                <div class="info-group">
+                                    <label>Assessor</label>
+                                    <p id="ov-assessor" class="info-val">-</p>
+                                </div>
+                                <div class="info-group">
+                                    <label>Next Review Date</label>
+                                    <p id="ov-due" class="info-val">-</p>
+                                </div>
+                                <div class="info-group full-width" style="grid-column: 1 / -1;">
+                                    <label>Description</label>
+                                    <p id="ov-desc" class="info-val">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Intake Tab -->
+                        <div id="tab-intake" class="tab-pane hidden">
+                            <div class="assessment-section" id="intake-pending-section">
+                                <h3 style="margin-bottom: 1rem; color: var(--primary);">Intake Process</h3>
+                                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">The intake questionnaire must be completed to determine the vendor's Inherent Risk.</p>
+                                <div style="display: flex; gap: 1rem;">
+                                    <button class="primary-btn" id="send-intake-btn" style="width: auto;">Send to Business POC</button>
+                                    <button class="secondary-btn" id="fill-intake-btn" style="width: auto;">Fill Manually</button>
+                                    <button class="action-btn danger-btn hidden" id="recall-email-btn" style="width: auto; padding: 0.5rem 1rem; border: 1px solid var(--danger); color: var(--danger); border-radius: 4px; background: transparent;">Recall Email</button>
+                                </div>
+                            </div>
+                            
+                            <div class="assessment-section hidden" id="intake-completed-section">
+                                <h3 style="margin-bottom: 1rem; color: var(--success);">Intake Completed</h3>
+                                <div class="glass-panel" style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">Calculated Inherent Risk Score</p>
+                                    <p id="intake-calculated-score" style="font-size: 2rem; font-weight: bold;">-</p>
+                                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 1rem; margin-bottom: 0.5rem;">Score Explanation</p>
+                                    <p id="intake-score-explanation" style="font-size: 1rem; color: var(--text-main); line-height: 1.5;">-</p>
+                                </div>
+                                <div id="intake-answers-breakdown" class="form-grid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+
+                            <!-- Assessment Questionnaire (master-detail: file list left, editor right) -->
+                            <div class="assessment-section" style="margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <div>
+                                        <h3 style="color: var(--primary); margin: 0;">Assessment Questionnaire</h3>
+                                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.35rem;">Select a questionnaire from the list to view and record the vendor's responses. The AI analysis runs on the Assessment tab.</p>
+                                    </div>
+                                    <button class="secondary-btn" id="assign-assessment-q-btn" style="padding: 0.4rem 0.9rem; font-size: 0.85rem; flex-shrink: 0;">+ Add Questionnaire</button>
+                                </div>
+                                <div id="assessment-no-questionnaire" class="empty-mini-state" style="text-align: left; padding: 1rem 0;">
+                                    No assessment questionnaire assigned yet. Click "Add Questionnaire" to choose one from your templates.
+                                </div>
+                                <div id="assessment-master-detail" class="q-master-detail hidden">
+                                    <div class="q-master-list" id="assessment-q-list">
+                                        <!-- Questionnaire file names injected here -->
+                                    </div>
+                                    <div class="q-detail-panel" id="assessment-q-detail">
+                                        <!-- Selected questionnaire's questions injected here -->
+                                    </div>
+                                </div>
+                                <!-- legacy container kept hidden for backwards compatibility -->
+                                <div id="assessment-questions-container" class="hidden"></div>
+                            </div>
+                        </div>
+
+                        <!-- Assessment Tab -->
+                        <div id="tab-assessment" class="tab-pane hidden">
+                            <div class="assessment-section">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <h3 style="margin: 0; color: var(--primary);">AI Compliance Analysis</h3>
+                                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.35rem;">The AI scans every uploaded document end-to-end, finds the passages most relevant to each question, and gives a detailed analysis with page references. Assign the questionnaire and record responses on the Questionnaires tab first.</p>
+                                    </div>
+                                    <button class="primary-btn" id="run-scan-btn" style="width: auto; flex-shrink: 0;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem; vertical-align: -3px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                        <span id="run-scan-btn-label">Run Assessment</span>
+                                    </button>
+                                </div>
+                                <div id="compliance-scan-results">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents Tab -->
+                        <div id="tab-documents" class="tab-pane hidden">
+                            <div class="assessment-section">
+                                <h3 style="margin-bottom: 1rem; color: var(--primary);">Evidence Documents</h3>
+                                <div class="upload-area" style="border: 2px dashed var(--glass-border); padding: 2rem; border-radius: 8px; text-align: center;">
+                                    <p style="color: var(--text-muted); margin-bottom: 1rem;">Upload evidence documents (PDF, Word, Excel, CSV, or text) — these are searched automatically during the AI compliance analysis on the Assessment tab.</p>
+                                    <button class="secondary-btn" onclick="document.getElementById('doc-upload').click()">Upload Document</button>
+                                    <input type="file" id="doc-upload" class="hidden-upload" style="display: none;" accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md">
+                                </div>
+
+                                <div class="link-upload-row">
+                                    <input type="url" id="doc-link-input" class="select-input" placeholder="Or paste a URL to scan a web page as evidence (e.g. a public trust/security page)">
+                                    <button class="secondary-btn" id="doc-link-add-btn" style="flex-shrink: 0;">Add Link</button>
+                                </div>
+                                <p class="field-hint" style="margin-top: 0.5rem;">Note: most websites block this kind of automated access from browser apps (a security feature called CORS), so this only works for pages that explicitly allow it. If a link fails, download the page or document and upload the file instead.</p>
+
+                                <div id="vendor-documents-list" class="uploaded-doc-list">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Report Tab -->
+                        <div id="tab-report" class="tab-pane hidden">
+                            <div class="assessment-section">
+                                <h3 style="margin-bottom: 0.5rem; color: var(--primary);">Advanced Risk Breakdown</h3>
+                                <p class="subtitle" style="margin-bottom: 1.5rem;">Review the calculated scores and finalize the risk rating.</p>
+
+                                <div class="glass-panel" style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                                    <div class="grid-2col" style="gap: 1rem;">
+                                        <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 1rem;">
+                                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">Inherent Risk Score</p>
+                                            <p id="report-inherent-score" style="font-size: 2rem; font-weight: bold;">-</p>
+                                        </div>
+                                        <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 1rem;">
+                                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">Assessment Score</p>
+                                            <input type="number" id="final-score-input" class="select-input" min="0" max="100" placeholder="e.g. 85" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); color: white; width: 80px; text-align: center; margin: 0 auto; display: block; font-size: 1.2rem; font-weight: bold;">
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">Residual Risk</p>
+                                            <p id="report-residual-score" style="font-size: 2rem; font-weight: bold; color: var(--primary);">-</p>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+                                        <p><strong>Formula:</strong> <code>Residual Risk = Inherent Risk * (1 - (Assessment Score / 100))</code></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-grid">
+                                    <div class="input-group">
+                                        <label>Final Override Risk Rating</label>
+                                        <select id="final-risk-select" class="select-input">
+                                            <option value="High">High Risk</option>
+                                            <option value="Medium">Medium Risk</option>
+                                            <option value="Low">Low Risk</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button id="publish-report-btn" class="primary-btn mt-4" style="width: auto; background: linear-gradient(135deg, var(--success), #059669);">Publish Final Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Configuration -->
+            <div id="configuration-view" class="app-view hidden">
+                <div class="glass-panel" style="max-width: 600px; margin: 0 auto; padding: 2rem;">
+                    <h2 style="margin-bottom: 2rem; color: var(--primary);">Application Settings</h2>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-light);">Theme</label>
+                        <select id="theme-selector" class="select-input" style="width: 100%; padding: 0.8rem; background: rgba(15, 23, 42, 0.6); font-size: 1rem;">
+                            <option value="dark">Dark (Default)</option>
+                            <option value="light">Light</option>
+                            <option value="solarized">Solarized Dark</option>
+                            <option value="midnight">Midnight Blue</option>
+                            <option value="forest">Forest Green</option>
+                            <option value="rose">Rose</option>
+                            <option value="slate">Slate Gray</option>
+                            <option value="nord">Nord</option>
+                            <option value="highcontrast">High Contrast</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 2.5rem;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-light);">Font Style</label>
+                        <select id="font-selector" class="select-input" style="width: 100%; padding: 0.8rem; background: rgba(15, 23, 42, 0.6); font-size: 1rem;">
+                            <option value="'Inter', sans-serif">Inter (Modern & Clean)</option>
+                            <option value="'Roboto', sans-serif">Roboto (Professional)</option>
+                            <option value="'Outfit', sans-serif">Outfit (Geometric & Friendly)</option>
+                            <option value="'Open Sans', sans-serif">Open Sans (Highly Readable)</option>
+                            <option value="'Lato', sans-serif">Lato (Warm & Balanced)</option>
+                            <option value="'Montserrat', sans-serif">Montserrat (Bold & Elegant)</option>
+                            <option value="'Source Sans 3', sans-serif">Source Sans (Technical)</option>
+                            <option value="'Merriweather', serif">Merriweather (Serif / Report)</option>
+                            <option value="'IBM Plex Mono', monospace">IBM Plex Mono (Monospace)</option>
+                        </select>
+                    </div>
+
+                    <button id="save-config-btn" class="primary-btn" style="width: 100%;">Save Preferences</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Duplicate Vendor Modal -->
+    <div class="modal-overlay hidden" id="duplicate-modal-overlay" style="z-index: 2000;">
+        <div class="modal-content glass-panel" style="max-width: 450px; width: 100%; border-color: var(--warning);">
+            <div class="modal-header" style="border-bottom-color: rgba(245, 158, 11, 0.2);">
+                <h2 style="color: var(--warning); display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Duplicate Vendor Detected
+                </h2>
+            </div>
+            <div style="padding: 1.5rem 0;">
+                <p style="margin-bottom: 1rem; color: var(--text-light);">A vendor with the name <strong id="duplicate-vendor-name" style="color: white;"></strong> already exists in your directory.</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">What would you like to do with the new submission?</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+                <button type="button" class="primary-btn" id="dup-merge-btn" style="background: rgba(59, 130, 246, 0.2); border: 1px solid var(--primary); color: var(--primary);">Merge with Existing</button>
+                <button type="button" class="secondary-btn" id="dup-keep-btn" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: var(--success);">Keep Both (Create Duplicate)</button>
+                <button type="button" class="secondary-btn" id="dup-cancel-btn" style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger);">Cancel & Delete New</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Vendor Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2 id="modal-title">Add Vendor</h2>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <form id="vendor-form">
+                <input type="hidden" id="vendor-id">
+                
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="vendor-name">Vendor Name</label>
+                        <input type="text" id="vendor-name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="vendor-type">Vendor Category</label>
+                        <select id="vendor-type" class="select-input" required>
+                            <option value="">Select Category</option>
+                            <!-- Populated from VENDOR_CATEGORIES by JS -->
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="vendor-data-type">Data Type Capture</label>
+                        <select id="vendor-data-type" class="select-input" required>
+                            <option value="">Select Data Type</option>
+                            <option value="PII">PII</option>
+                            <option value="PHI">PHI</option>
+                            <option value="Financial">Financial</option>
+                            <option value="Internal">Internal Data</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="vendor-poc">Vendor Point of Contact</label>
+                        <input type="text" id="vendor-poc" placeholder="Email or Name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="vendor-assessor">Assessor Name</label>
+                        <input type="text" id="vendor-assessor" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="vendor-due-date">Next Review Date</label>
+                        <input type="date" id="vendor-due-date" required>
+                    </div>
+                    <div class="input-group full-width">
+                        <label for="vendor-desc">Vendor Description</label>
+                        <textarea id="vendor-desc" class="textarea-input" rows="3" required></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancel-modal">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-vendor-btn">Create Vendor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 id="profile-modal-title">Edit Profile</h2>
+                <button class="close-btn" id="close-profile-modal">&times;</button>
+            </div>
+            <form id="profile-form">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+                        <div style="position: relative; width: 80px; height: 80px;">
+                            <div class="avatar" id="profile-avatar-preview" style="width: 80px; height: 80px; font-size: 2rem; background-size: cover; background-position: center; border-radius: 50%;">U</div>
+                            <button type="button" class="secondary-btn" onclick="document.getElementById('profile-photo-upload').click()" style="position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); padding: 0.2rem 0.5rem; font-size: 0.7rem; white-space: nowrap;">Change</button>
+                            <input type="file" id="profile-photo-upload" class="hidden-upload" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="profile-name">Full Name</label>
+                        <input type="text" id="profile-name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="profile-title">Job Title</label>
+                        <input type="text" id="profile-title" placeholder="e.g. Risk Analyst">
+                    </div>
+                    <div class="input-group">
+                        <label for="profile-company">Company Name</label>
+                        <input type="text" id="profile-company" value="Acme Corp" disabled style="background: rgba(255,255,255,0.05); color: var(--text-muted); cursor: not-allowed;">
+                        <small style="color: var(--text-muted); font-size: 0.7rem; margin-top: 0.3rem; display: block;">Only administrators can change the company name.</small>
+                    </div>
+                    <div class="input-group" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                        <label for="profile-theme">Theme Preference</label>
+                        <select id="profile-theme" class="select-input">
+                            <option value="dark">Dark (Default)</option>
+                            <option value="light">Light</option>
+                            <option value="solarized">Solarized Dark</option>
+                            <option value="midnight">Midnight Blue</option>
+                            <option value="forest">Forest Green</option>
+                            <option value="rose">Rose</option>
+                            <option value="slate">Slate Gray</option>
+                            <option value="nord">Nord</option>
+                            <option value="highcontrast">High Contrast</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="profile-font">Font Style</label>
+                        <select id="profile-font" class="select-input">
+                            <option value="'Inter', sans-serif">Inter (Modern & Clean)</option>
+                            <option value="'Roboto', sans-serif">Roboto (Professional)</option>
+                            <option value="'Outfit', sans-serif">Outfit (Geometric & Stylish)</option>
+                            <option value="'Open Sans', sans-serif">Open Sans (Highly Readable)</option>
+                            <option value="'Lato', sans-serif">Lato (Warm & Balanced)</option>
+                            <option value="'Montserrat', sans-serif">Montserrat (Bold & Elegant)</option>
+                            <option value="'Source Sans 3', sans-serif">Source Sans (Technical)</option>
+                            <option value="'Merriweather', serif">Merriweather (Serif / Report)</option>
+                            <option value="'IBM Plex Mono', monospace">IBM Plex Mono (Monospace)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="modal-footer" style="margin-top: 2rem;">
+                    <button type="button" class="secondary-btn" id="cancel-profile-modal">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-profile-btn">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Intake Modal -->
+    <div id="intake-modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="intake-modal-title">Complete Intake Questionnaire</h2>
+                <button class="close-btn" id="close-intake-modal">&times;</button>
+            </div>
+            <form id="intake-form">
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Answer these preliminary questions to determine the vendor's inherent risk score.</p>
+                <div class="form-grid" id="internal-intake-questions-container" style="grid-template-columns: 1fr;">
+                    <!-- Dynamic questions injected here -->
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancel-intake-modal">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-intake-btn">Submit Intake</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Email Composer Modal -->
+    <div id="email-modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="email-modal-title">Send Intake Questionnaire</h2>
+                <button class="close-btn" id="close-email-modal">&times;</button>
+            </div>
+            <form id="email-form">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="input-group">
+                        <label>To</label>
+                        <input type="email" id="email-to" required>
+                    </div>
+                    <div class="input-group">
+                        <label>CC</label>
+                        <input type="text" id="email-cc" placeholder="Enter email addresses...">
+                    </div>
+                    <div class="input-group">
+                        <label>BCC</label>
+                        <input type="text" id="email-bcc" placeholder="Enter email addresses...">
+                    </div>
+                    <div class="input-group">
+                        <label>Subject</label>
+                        <input type="text" id="email-subject" value="Action Required: Intake Questionnaire">
+                    </div>
+                    <div class="input-group">
+                        <label>Message Body</label>
+                        <textarea id="email-body" class="textarea-input" rows="6">Hello,
+
+Please find the attached Intake Questionnaire required for the vendor onboarding process. Alternatively, you can complete it online through our secure portal:
+[PORTAL_LINK]
+
+Complete it at your earliest convenience to proceed with the risk assessment.
+
+Thank you,
+Third Party Risk Management Team</textarea>
+                    </div>
+                    
+                    <div class="input-group" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                        <label>Attachments</label>
+                        <div id="email-attachments-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                            <!-- Default Intake Questionnaire Chip will be dynamically inserted here if it exists -->
+                        </div>
+                        <button type="button" class="action-btn" onclick="document.getElementById('email-attach-file').click()">+ Add Attachment</button>
+                        <input type="file" id="email-attach-file" style="display: none;" multiple>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancel-email-modal">Cancel</button>
+                    <button type="submit" class="primary-btn" id="send-email-btn">Send Email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Questionnaire Builder Modal -->
+    <div id="questionnaire-modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 650px;">
+            <div class="modal-header">
+                <h2 id="questionnaire-modal-title">Create Questionnaire</h2>
+                <button class="close-btn" id="close-questionnaire-modal">&times;</button>
+            </div>
+            <form id="questionnaire-form">
+                <input type="hidden" id="q-id">
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 1.5rem;">
+                    <div class="input-group">
+                        <label for="q-name">Questionnaire Name</label>
+                        <input type="text" id="q-name" required placeholder="e.g. Standard Security Intake">
+                    </div>
+                    <div class="input-group">
+                        <label for="q-type">Type</label>
+                        <select id="q-type" class="select-input">
+                            <option value="Intake">Intake</option>
+                            <option value="Assessment">Assessment</option>
+                            <option value="Audit">Audit</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1.1rem;">Questions</h3>
+                    <button type="button" class="secondary-btn" id="add-question-btn" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;">
+                        + Add Question
+                    </button>
+                </div>
+                
+                <div id="dynamic-questions-container" style="max-height: 40vh; overflow-y: auto; padding-right: 0.5rem;">
+                    <!-- Questions injected here -->
+                </div>
+                
+                <div class="modal-footer" style="margin-top: 1.5rem;">
+                    <button type="button" class="secondary-btn" id="cancel-questionnaire-modal">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-questionnaire-btn">Save Questionnaire</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Select Questionnaire Modal -->
+    <!-- Focused per-question Expand modal (with prev/next navigation) -->
+    <div id="question-modal-overlay" class="modal-overlay hidden" style="z-index: 1015;">
+        <div class="modal-content glass-panel question-modal-content">
+            <div class="modal-header">
+                <h2 id="question-modal-title">Question</h2>
+                <button class="close-btn" id="question-modal-close">&times;</button>
+            </div>
+            <div id="question-modal-body" class="question-modal-body">
+                <!-- Populated by JS with the shared question-detail markup -->
+            </div>
+            <div class="question-modal-nav">
+                <button class="secondary-btn" id="question-modal-prev">← Previous</button>
+                <button class="secondary-btn" id="question-modal-next">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="select-questionnaire-modal" class="modal-overlay hidden" style="z-index: 1005;">
+        <div class="modal-content glass-panel" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>Select Questionnaire to Send</h2>
+                <button class="close-btn" id="close-select-q-modal">&times;</button>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Choose a questionnaire to send to the vendor POC.</p>
+            <div class="input-group">
+                <label for="q-select-dropdown">Available Questionnaires</label>
+                <select id="q-select-dropdown" class="select-input">
+                    <!-- Options injected here -->
+                </select>
+            </div>
+            <div class="modal-footer" style="margin-top: 2rem;">
+                <button class="secondary-btn" id="cancel-select-q-modal">Cancel</button>
+                <button class="primary-btn" id="confirm-send-q-btn">Select & Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Format Choice Modal -->
+    <div id="export-format-modal" class="modal-overlay hidden" style="z-index: 1010;">
+        <div class="modal-content glass-panel" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Export Questionnaires</h2>
+                <button class="close-btn" id="close-export-format-modal">&times;</button>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Choose a file format to export <span id="export-format-type-label" style="color: var(--text-main); font-weight: 600;"></span> questionnaires.</p>
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" class="secondary-btn" id="export-format-excel-btn" style="flex: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="17"></line><line x1="16" y1="13" x2="8" y2="17"></line></svg>
+                    Excel (.xlsx)
+                </button>
+                <button type="button" class="secondary-btn" id="export-format-pdf-btn" style="flex: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="9" y2="17"></line><line x1="9" y1="15" x2="10.5" y2="15"></line><line x1="13" y1="15" x2="13" y2="17.5"></line><line x1="13" y1="16" x2="14" y2="16"></line></svg>
+                    PDF (.pdf)
+                </button>
+            </div>
+            <div class="modal-footer" style="margin-top: 2rem;">
+                <button class="secondary-btn" id="cancel-export-format-modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">Action successful!</div>
+    
+    <!-- INTAKE PORTAL EXTERNAL VIEW -->
+    <div id="intake-portal-view" class="modal-overlay hidden" style="z-index: 2000; background: var(--bg-main); backdrop-filter: none; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 2rem;">
+        <div style="width: 100%; max-width: 800px; margin-top: 2rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="margin-bottom: 1rem;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                <h1 style="color: var(--text-main); font-size: 2rem;">Vendor Intake Portal</h1>
+                <p style="color: var(--text-muted); margin-top: 0.5rem;">Secure Questionnaire Submission</p>
+            </div>
+            
+            <div class="glass-panel" style="padding: 2rem;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Questionnaire for: <span id="portal-vendor-name" style="color: var(--text-main);"></span></h2>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">Please answer all the questions below. Your responses will be used to calculate the inherent risk of the engagement.</p>
+                
+                <form id="portal-intake-form">
+                    <div id="portal-questions-container" class="form-grid" style="grid-template-columns: 1fr;">
+                        <!-- Generated dynamically -->
+                    </div>
+                    
+                    <div style="margin-top: 2.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                        <button type="button" class="secondary-btn" id="portal-cancel-btn">Cancel</button>
+                        <button type="submit" class="primary-btn">Submit Responses</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
